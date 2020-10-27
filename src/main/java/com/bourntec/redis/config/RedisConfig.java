@@ -56,15 +56,15 @@ public class RedisConfig {
 		return template;
 	}
 
-	@Bean("firstQueueListenerAdapter")
-	MessageListenerAdapter firstMessageListener() {
-		return new MessageListenerAdapter(new RedisMessageSubscriberFirst(), "firstQueue");
-	}
-
-	@Bean("secondQueueListenerAdapter")
-	MessageListenerAdapter secondMessageListener() {
-		return new MessageListenerAdapter(new RedisMessageSubscriberSecond(), "secondQueue");
-	}
+	/*
+	 * @Bean("firstQueueListenerAdapter") MessageListenerAdapter
+	 * firstMessageListener() { return new MessageListenerAdapter(new
+	 * RedisMessageSubscriberFirst(), "firstQueue"); }
+	 * 
+	 * @Bean("secondQueueListenerAdapter") MessageListenerAdapter
+	 * secondMessageListener() { return new MessageListenerAdapter(new
+	 * RedisMessageSubscriberSecond(), "secondQueue"); }
+	 */
 
 	/*
 	 * @Bean RedisMessageListenerContainer container(RedisConnectionFactory
@@ -90,30 +90,33 @@ public class RedisConfig {
 		final RedisMessageListenerContainer container = new RedisMessageListenerContainer();
 		container.setConnectionFactory(jedisConnectionFactory());
 
-		container.addMessageListener(firstMessageListener(), topic("firstQ"));
-		container.addMessageListener(secondMessageListener(), topic("firstQ"));
-
 		/*
-		 * container.addMessageListener(notificationListenerAdapter(receiver()), new
-		 * PatternTopic("receiveNotificationMessage"));
-		 * container.addMessageListener(countListenerAdapter(receiver()), new
-		 * PatternTopic("receiveCountMessage"));
+		 * container.addMessageListener(firstMessageListener(), topic("firstQ"));
+		 * container.addMessageListener(secondMessageListener(), topic("firstQ"));
 		 */
+
+		container.addMessageListener(notificationListenerAdapter(receiver()),
+				new PatternTopic("receiveNotificationMessage"));
+		container.addMessageListener(countListenerAdapter(receiver()), new PatternTopic("receiveCountMessage"));
 
 		return container;
 	}
 
-	/*
-	 * @Bean RedisReceiver receiver() { return new RedisReceiver(); }
-	 * 
-	 * @Bean("notificationListenerAdapter") MessageListenerAdapter
-	 * notificationListenerAdapter(RedisReceiver redisReceiver) { return new
-	 * MessageListenerAdapter(redisReceiver, "receiveNotificationMessage"); }
-	 * 
-	 * @Bean("countListenerAdapter") MessageListenerAdapter
-	 * countListenerAdapter(RedisReceiver redisReceiver) { return new
-	 * MessageListenerAdapter(redisReceiver, "receiveCountMessage"); }
-	 */
+	@Bean
+	RedisReceiver receiver() {
+		return new RedisReceiver();
+	}
+
+	@Bean("notificationListenerAdapter")
+	MessageListenerAdapter notificationListenerAdapter(RedisReceiver redisReceiver) {
+		return new MessageListenerAdapter(redisReceiver, "receiveNotificationMessage");
+	}
+
+	@Bean("countListenerAdapter")
+	MessageListenerAdapter countListenerAdapter(RedisReceiver redisReceiver) {
+		return new MessageListenerAdapter(redisReceiver, "receiveCountMessage");
+	}
+
 	@Bean
 	MessagePublisher redisPublisher() {// String channelName
 		return new RedisMessagePublisher(redisTemplate(), topic("firstQ"));

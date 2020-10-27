@@ -27,7 +27,7 @@ public class BookServiceImpl implements BookService {
 		try {
 			resp = bookRepository.save(book);
 
-			redisPublisher.publish("firstQ", "set name ww");
+			//redisPublisher.publish("firstQ", "set name ww");
 
 			redisPublisher.publish("receiveCountMessage", "set name srijini");
 			// redisPublisher.publish("receiveNotificationMessage", "set name tt");
